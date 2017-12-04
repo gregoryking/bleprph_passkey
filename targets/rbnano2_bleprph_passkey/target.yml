@@ -1,0 +1,4 @@
+### Target: targets/rbnano2_bleprph_passkey
+target.app: "apps/bleprph_passkey"
+target.bsp: "@apache-mynewt-core/hw/bsp/rb-nano2"
+target.build_profile: "debug"
