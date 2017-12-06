@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-pkg.name: apps/bleprph
+pkg.name: apps/bleprph_passkey
 pkg.type: app
 pkg.description: Simple BLE peripheral application.
 pkg.author: "Apache Mynewt <dev@mynewt.apache.org>"

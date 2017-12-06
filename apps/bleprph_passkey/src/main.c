@@ -43,7 +43,7 @@
 struct log bleprph_log;
 
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
-
+static int passkey_action(struct ble_gap_event *event);
 /**
  * Logs information about a connection to the console.
  */
@@ -177,6 +177,19 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
         }
         return 0;
 
+    case BLE_GAP_EVENT_PASSKEY_ACTION:
+        console_printf("passkey action event; action=%d",
+                       event->passkey.params.action);
+        if (event->passkey.params.action == BLE_SM_IOACT_NUMCMP) {
+            console_printf(" numcmp=%lu",
+                           (unsigned long)event->passkey.params.numcmp);
+        }
+        console_printf("\n");
+
+		rc = passkey_action(event);
+		assert(rc == 0);
+		return 0;
+
     case BLE_GAP_EVENT_DISCONNECT:
         BLEPRPH_LOG(INFO, "disconnect; reason=%d ", event->disconnect.reason);
         bleprph_print_conn_desc(&event->disconnect.conn);
@@ -243,6 +256,28 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
     }
 
     return 0;
+}
+
+static int
+passkey_action(struct ble_gap_event *event)
+{
+	struct ble_sm_io pk;
+	int rc;
+
+    switch(event->passkey.params.action) {
+		case BLE_SM_IOACT_DISP:
+			/* passkey is 6 digit number */
+			pk.action = event->passkey.params.action;
+			pk.passkey = 123456;
+			break;
+
+		default:
+		  return EINVAL;
+    }
+
+    rc = ble_sm_inject_io(event->passkey.conn_handle, &pk);
+    assert(rc == 0);
+	return 0;
 }
 
 static void

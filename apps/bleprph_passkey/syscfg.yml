@@ -16,7 +16,7 @@
 # under the License.
 #
 
-# Package: apps/bleprph
+# Package: apps/bleprph_passkey
 
 syscfg.vals:
     # Disable central and observer roles.
