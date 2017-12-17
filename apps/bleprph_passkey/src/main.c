@@ -71,6 +71,39 @@ bleprph_print_conn_desc(struct ble_gap_conn_desc *desc)
                 desc->sec_state.bonded);
 }
 
+/* The timer callout */
+static struct os_callout adv_callout;
+
+static void bleprph_advertise(void);
+
+/*
+ * Event callback function for timer events. It halts advertising.
+ */
+static void
+timer_ev_cb(struct os_event *ev)
+{
+    assert(ev != NULL);
+
+    int rc;
+	rc = ble_gap_adv_stop();
+		if (rc != 0) {
+			BLEPRPH_LOG(ERROR, "error disabling advertisement; rc=%d\n", rc);
+			return;
+		}
+}
+
+static void
+init_timer(void)
+{
+    /*
+     * Initialize the callout for a timer event.
+     */
+    os_callout_init(&adv_callout, os_eventq_dflt_get(),
+                    timer_ev_cb, NULL);
+
+    os_callout_reset(&adv_callout, OS_TICKS_PER_SEC * 150);
+}
+
 /**
  * Enables advertising with the following parameters:
  *     o General discoverable mode.
@@ -173,7 +206,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
 
         if (event->connect.status != 0) {
             /* Connection failed; resume advertising. */
-            bleprph_advertise();
+//            bleprph_advertise();
         }
         return 0;
 
@@ -196,7 +229,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
         BLEPRPH_LOG(INFO, "\n");
 
         /* Connection terminated; resume advertising. */
-        bleprph_advertise();
+//        bleprph_advertise();
         return 0;
 
     case BLE_GAP_EVENT_CONN_UPDATE:
@@ -345,6 +378,9 @@ main(void)
         }
     }
 #endif
+
+    init_timer();
+
 
     /*
      * As the last thing, process events from default event queue.
